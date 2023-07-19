@@ -1,8 +1,8 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { GetUser } from '../auth/decorator';
-import { MyJwtGuard } from '../auth/guard';
-import { ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
   CustomApiBadRequestResponse,
   CustomApiForbiddenResponse,
@@ -13,16 +13,17 @@ import {
 } from 'src/utils';
 
 @ApiTags('Users')
+@ApiBearerAuth()
+@CustomApiBadRequestResponse()
+@CustomApiUnauthorizedResponse()
+@CustomApiNotFoundResponse()
+@CustomApiForbiddenResponse()
+@CustomApiInternalServerErrorResponse()
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UserController {
-  @UseGuards(MyJwtGuard)
   @Get('me')
   @CustomApiResponse()
-  @CustomApiBadRequestResponse()
-  @CustomApiUnauthorizedResponse()
-  @CustomApiNotFoundResponse()
-  @CustomApiForbiddenResponse()
-  @CustomApiInternalServerErrorResponse()
   me(@GetUser() user: User) {
     return user;
   }

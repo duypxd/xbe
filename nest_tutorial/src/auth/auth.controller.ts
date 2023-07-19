@@ -20,9 +20,9 @@ export class AuthController {
   })
   @CustomApiUnauthorizedResponse()
   @CustomApiInternalServerErrorResponse()
-  @Post('register')
-  register(@Body() body: AuthDTO) {
-    return this.authService.register(body);
+  @Post('login')
+  login(@Body() body: AuthDTO) {
+    return this.authService.login(body);
   }
 
   @ApiCreatedResponse({ type: AuthDTO })
@@ -33,8 +33,8 @@ export class AuthController {
   })
   @CustomApiUnauthorizedResponse()
   @CustomApiInternalServerErrorResponse()
-  @Post('login')
-  login(@Body() body: AuthDTO) {
-    return this.authService.login(body);
+  @Post('register')
+  register(@Body() body: AuthDTO) {
+    return this.authService.register(body);
   }
 }
