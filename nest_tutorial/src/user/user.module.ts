@@ -3,5 +3,6 @@ import { UserController } from './user.controller';
 
 @Module({
   controllers: [UserController],
+  providers: [],
 })
 export class UserModule {}
