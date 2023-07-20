@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
-import { NoteModule } from './note/note.module';
+import { CommentModule } from './comment/comment.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
@@ -11,7 +11,7 @@ import { PrismaModule } from './prisma/prisma.module';
     ConfigModule.forRoot({ isGlobal: true }),
     UserModule,
     AuthModule,
-    NoteModule,
+    CommentModule,
     PrismaModule,
   ],
   controllers: [],

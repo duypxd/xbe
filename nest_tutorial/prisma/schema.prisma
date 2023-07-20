@@ -11,19 +11,19 @@ datasource db {
 }
 
 model User {
-  id             Int      @id @default(autoincrement())
-  email          String   @unique
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
   firstName      String?
   lastName       String?
   hashedPassword String
-  createAt       DateTime @default(now())
-  updateAt       DateTime @default(now())
-  notes          Note[]
+  createAt       DateTime  @default(now())
+  updateAt       DateTime  @default(now())
+  comments       Comment[]
 
   @@map("users") // users id "table's name" in Postgres SQL
 }
 
-model Note {
+model Comment {
   id          Int      @id @default(autoincrement())
   title       String
   description String?
@@ -35,5 +35,5 @@ model Note {
   User   User? @relation(fields: [userId], references: [id])
   userId Int?
 
-  @@map("notes")
+  @@map("comments")
 }

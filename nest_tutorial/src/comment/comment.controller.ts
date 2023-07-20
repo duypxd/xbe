@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guard';
-import { NoteService } from './note.service';
+import { CommentService } from './comment.service';
 import { GetUser } from '../auth/decorator';
 import { InsertNoteDTO, UpdateNoteDTO } from './dto';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -23,7 +23,7 @@ import {
   CustomApiUnauthorizedResponse,
 } from 'src/utils';
 
-@ApiTags('Notes')
+@ApiTags('Comments')
 @ApiBearerAuth()
 @CustomApiBadRequestResponse()
 @CustomApiUnauthorizedResponse()
@@ -31,9 +31,9 @@ import {
 @CustomApiForbiddenResponse()
 @CustomApiInternalServerErrorResponse()
 @UseGuards(JwtAuthGuard)
-@Controller('notes')
-export class NoteController {
-  constructor(private noteService: NoteService) {}
+@Controller('comments')
+export class CommentController {
+  constructor(private commentService: CommentService) {}
 
   @Get()
   @ApiResponse({
@@ -42,13 +42,13 @@ export class NoteController {
     type: String,
   })
   getNotes(@GetUser('id') userId: number) {
-    return this.noteService.getNotes(userId);
+    return this.commentService.getNotes(userId);
   }
 
   @Get(':id')
   @CustomApiResponse()
   getNoteById(@Param('id') noteId: number) {
-    return this.noteService.getNoteById(noteId);
+    return this.commentService.getNoteById(noteId);
   }
 
   @Post()
@@ -59,7 +59,7 @@ export class NoteController {
   ) {
     console.log(userId);
     console.log(insertNoteDTO);
-    return this.noteService.insertNote(userId, insertNoteDTO);
+    return this.commentService.insertNote(userId, insertNoteDTO);
   }
 
   @Put(':id')
@@ -68,12 +68,12 @@ export class NoteController {
     @Param('id', ParseIntPipe) noteId: number,
     @Body() updateNoteDTO: UpdateNoteDTO,
   ) {
-    return this.noteService.updateNoteById(noteId, updateNoteDTO);
+    return this.commentService.updateNoteById(noteId, updateNoteDTO);
   }
 
   @Delete(':id')
   @CustomApiResponse()
   deleteNoteById(@Param('id', ParseIntPipe) noteId: number) {
-    return this.noteService.deleteNoteById(noteId);
+    return this.commentService.deleteNoteById(noteId);
   }
 }

@@ -3,10 +3,10 @@ import { InsertNoteDTO, UpdateNoteDTO } from './dto';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
-export class NoteService {
+export class CommentService {
   constructor(private prismaService: PrismaService) {}
   async insertNote(userId: number, insertNoteDTO: InsertNoteDTO) {
-    return await this.prismaService.note.create({
+    return await this.prismaService.comment.create({
       data: {
         ...insertNoteDTO,
         userId,
@@ -15,7 +15,7 @@ export class NoteService {
   }
 
   async getNotes(userId: number) {
-    return await this.prismaService.note.findMany({
+    return await this.prismaService.comment.findMany({
       where: {
         userId,
       },
@@ -24,7 +24,7 @@ export class NoteService {
 
   async getNoteById(noteId: number) {
     try {
-      return await this.prismaService.note.findFirst({
+      return await this.prismaService.comment.findFirst({
         where: {
           id: noteId,
         },
@@ -35,7 +35,7 @@ export class NoteService {
   }
 
   async updateNoteById(noteId: number, updateNoteDTO: UpdateNoteDTO) {
-    const note = this.prismaService.note.findUnique({
+    const note = this.prismaService.comment.findUnique({
       where: {
         id: noteId,
       },
@@ -43,7 +43,7 @@ export class NoteService {
     if (!note) {
       throw new ForbiddenException('Cannot find Note to update');
     }
-    return await this.prismaService.note.update({
+    return await this.prismaService.comment.update({
       where: {
         id: noteId,
       },
@@ -52,15 +52,15 @@ export class NoteService {
   }
 
   async deleteNoteById(noteId: number) {
-    const note = await this.prismaService.note.findUnique({
+    const note = await this.prismaService.comment.findUnique({
       where: {
         id: noteId,
       },
     });
     if (!note) {
-      throw new ForbiddenException('Cannot find Note to delete');
+      throw new ForbiddenException('Cannot find Comment to delete');
     }
-    return this.prismaService.note.delete({
+    return this.prismaService.comment.delete({
       where: {
         id: noteId,
       },
