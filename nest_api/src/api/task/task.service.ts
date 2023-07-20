@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TaskDTO } from './dto';
+import { Pagination, PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class TaskService {
@@ -33,21 +34,36 @@ export class TaskService {
     }
   }
 
-  async getMyTasks(userId: number) {
+  async getMyTasks(userId: number, params: PaginationDto) {
     try {
-      return await this.prismaService.task.findMany({
+      const data = await this.prismaService.task.findMany({
         where: {
           userId,
         },
+        ...Pagination.query(params.page, params.perPage),
       });
+      const total = await this.prismaService.task.count();
+      return {
+        data,
+        total,
+        ...params,
+      };
     } catch (error) {
       throw new ForbiddenException(error.message);
     }
   }
 
-  async getTasks() {
+  async getTasks(params: PaginationDto) {
     try {
-      return await this.prismaService.task.findMany();
+      const data = await this.prismaService.task.findMany({
+        ...Pagination.query(params.page, params.perPage),
+      });
+      const total = await this.prismaService.task.count();
+      return {
+        data,
+        total,
+        ...params,
+      };
     } catch (error) {
       throw new ForbiddenException(error.message);
     }

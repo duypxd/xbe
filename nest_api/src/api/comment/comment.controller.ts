@@ -7,13 +7,14 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../guard';
 import { CommentService } from './comment.service';
 import { GetUser } from '../../decorator';
 import { CommentDTO } from './dto';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
   CustomApiBadRequestResponse,
   CustomApiForbiddenResponse,
@@ -22,6 +23,7 @@ import {
   CustomApiResponse,
   CustomApiUnauthorizedResponse,
 } from 'src/utils';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @ApiTags('Comments')
 @ApiBearerAuth()
@@ -36,17 +38,18 @@ export class CommentController {
   constructor(private commentService: CommentService) {}
 
   @Get(':taskId')
-  @ApiResponse({
-    status: 200,
-    description: 'OK',
-    type: String,
-    isArray: true,
-  })
+  @CustomApiResponse(true)
+  @ApiQuery({ name: 'perPage', required: false })
+  @ApiQuery({ name: 'page', required: false })
   getComments(
     @GetUser('id', ParseIntPipe) userId: number,
     @Param('taskId', ParseIntPipe) taskId: number,
+    @Query() params: PaginationDto,
   ) {
-    return this.commentService.getComments(userId, taskId);
+    const page = Number(params.page ?? 1);
+    const perPage = Number(params.perPage ?? 10);
+    params = { page, perPage };
+    return this.commentService.getComments(userId, taskId, params);
   }
 
   @Get(':taskId/:commentId')

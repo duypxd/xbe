@@ -8,11 +8,12 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 
-export function CustomApiResponse() {
+export function CustomApiResponse(isArray = false) {
   return ApiResponse({
     status: 200,
     description: 'OK',
     type: String,
+    isArray: isArray,
   });
 }
 

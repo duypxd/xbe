@@ -7,9 +7,10 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/guard';
 import {
   CustomApiBadRequestResponse,
@@ -22,6 +23,7 @@ import {
 import { TaskService } from './task.service';
 import { GetUser } from 'src/decorator';
 import { TaskDTO } from './dto';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
@@ -36,23 +38,25 @@ export class TaskController {
   constructor(private taskService: TaskService) {}
 
   @Get('/me')
-  @ApiResponse({
-    status: 200,
-    description: 'OK',
-    isArray: true,
-  })
-  getMyTasks(@GetUser('id') userId: number) {
-    return this.taskService.getMyTasks(userId);
+  @CustomApiResponse(true)
+  @ApiQuery({ name: 'perPage', required: false })
+  @ApiQuery({ name: 'page', required: false })
+  getMyTasks(@Query() params: PaginationDto, @GetUser('id') userId: number) {
+    const page = Number(params.page ?? 1);
+    const perPage = Number(params.perPage ?? 10);
+    params = { page, perPage };
+    return this.taskService.getMyTasks(userId, params);
   }
 
   @Get()
-  @ApiResponse({
-    status: 200,
-    description: 'OK',
-    isArray: true,
-  })
-  getTasks() {
-    return this.taskService.getTasks();
+  @CustomApiResponse(true)
+  @ApiQuery({ name: 'perPage', required: false })
+  @ApiQuery({ name: 'page', required: false })
+  getTasks(@Query() params: PaginationDto) {
+    const page = Number(params.page ?? 1);
+    const perPage = Number(params.perPage ?? 10);
+    params = { page, perPage };
+    return this.taskService.getTasks(params);
   }
 
   @Get(':id')

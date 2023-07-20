@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CommentDTO } from './dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { Pagination, PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class CommentService {
@@ -20,14 +21,21 @@ export class CommentService {
     }
   }
 
-  async getComments(userId: number, taskId: number) {
+  async getComments(userId: number, taskId: number, params: PaginationDto) {
     try {
-      return await this.prismaService.comment.findMany({
+      const data = await this.prismaService.comment.findMany({
         where: {
           userId,
           taskId,
         },
+        ...Pagination.query(params.page, params.perPage),
       });
+      const total = await this.prismaService.comment.count();
+      return {
+        data,
+        total,
+        ...params,
+      };
     } catch (error) {
       throw new ForbiddenException(error.message);
     }
