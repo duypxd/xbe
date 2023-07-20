@@ -44,16 +44,16 @@ export class AuthService {
       },
     });
     // Compare password
-    // const passwordMatched = await argon.verify(
-    //   user.hashedPassword,
-    //   authDTO.password,
-    // );
-    // if (!user) {
-    //   throw new ForbiddenException('User not found!');
-    // }
-    // if (!passwordMatched) {
-    //   throw new ForbiddenException('Incorrect password');
-    // }
+    const passwordMatched = await argon.verify(
+      user.hashedPassword,
+      authDTO.password,
+    );
+    if (!user) {
+      throw new ForbiddenException('User does not exist!');
+    }
+    if (!passwordMatched) {
+      throw new ForbiddenException('Incorrect password');
+    }
     try {
       delete user.hashedPassword;
       return {
@@ -71,7 +71,7 @@ export class AuthService {
       email,
     };
     const jwtString = await this.jwtService.signAsync(payload, {
-      expiresIn: '10m',
+      expiresIn: '1440m',
       secret: this.configService.get('JWT_SECRET'),
     });
     return jwtString;

@@ -12,7 +12,7 @@ import {
 import { JwtAuthGuard } from '../../guard';
 import { CommentService } from './comment.service';
 import { GetUser } from '../../decorator';
-import { InsertCommentDTO, UpdateCommentDTO } from './dto';
+import { CommentDTO } from './dto';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   CustomApiBadRequestResponse,
@@ -35,43 +35,63 @@ import {
 export class CommentController {
   constructor(private commentService: CommentService) {}
 
-  @Get()
+  @Get(':taskId')
   @ApiResponse({
     status: 200,
     description: 'OK',
     type: String,
+    isArray: true,
   })
-  getComments(@GetUser('id') userId: number) {
-    return this.commentService.getComments(userId);
-  }
-
-  @Get(':id')
-  @CustomApiResponse()
-  getCommentById(@Param('id') commentId: number) {
-    return this.commentService.getCommentById(commentId);
-  }
-
-  @Post()
-  @CustomApiResponse()
-  insertComment(
+  getComments(
     @GetUser('id', ParseIntPipe) userId: number,
-    @Body() insertCommentDTO: InsertCommentDTO,
+    @Param('taskId', ParseIntPipe) taskId: number,
   ) {
-    return this.commentService.insertComment(userId, insertCommentDTO);
+    return this.commentService.getComments(userId, taskId);
   }
 
-  @Put(':id')
+  @Get(':taskId/:commentId')
+  @CustomApiResponse()
+  getCommentById(
+    @GetUser('id', ParseIntPipe) userId: number,
+    @Param('taskId', ParseIntPipe) taskId: number,
+    @Param('commentId', ParseIntPipe) commentId: number,
+  ) {
+    return this.commentService.getCommentById(taskId, userId, commentId);
+  }
+
+  @Post(':taskId')
+  @CustomApiResponse()
+  createComment(
+    @GetUser('id', ParseIntPipe) userId: number,
+    @Param('taskId', ParseIntPipe) taskId: number,
+    @Body() commentDTO: CommentDTO,
+  ) {
+    return this.commentService.createComment(userId, taskId, commentDTO);
+  }
+
+  @Put(':taskId/:commentId')
   @CustomApiResponse()
   updateCommentById(
-    @Param('id', ParseIntPipe) commentId: number,
-    @Body() updateCommentDTO: UpdateCommentDTO,
+    @GetUser('id', ParseIntPipe) userId: number,
+    @Param('taskId', ParseIntPipe) taskId: number,
+    @Param('commentId', ParseIntPipe) commentId: number,
+    @Body() commentDTO: CommentDTO,
   ) {
-    return this.commentService.updateCommentById(commentId, updateCommentDTO);
+    return this.commentService.updateCommentById(
+      userId,
+      taskId,
+      commentId,
+      commentDTO,
+    );
   }
 
-  @Delete(':id')
+  @Delete(':taskId/:commentId')
   @CustomApiResponse()
-  deleteCommentById(@Param('id', ParseIntPipe) commentId: number) {
-    return this.commentService.deleteCommentById(commentId);
+  deleteCommentById(
+    @GetUser('id', ParseIntPipe) userId: number,
+    @Param('taskId', ParseIntPipe) taskId: number,
+    @Param('commentId', ParseIntPipe) commentId: number,
+  ) {
+    return this.commentService.deleteCommentById(userId, taskId, commentId);
   }
 }

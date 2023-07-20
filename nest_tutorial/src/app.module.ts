@@ -5,6 +5,7 @@ import { UserModule } from './api/user/user.module';
 import { AuthModule } from './api/auth/auth.module';
 import { CommentModule } from './api/comment/comment.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { TaskModule } from './api/task/task.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { PrismaModule } from './prisma/prisma.module';
     UserModule,
     AuthModule,
     CommentModule,
+    TaskModule,
     PrismaModule,
   ],
   controllers: [],
