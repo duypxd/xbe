@@ -9,10 +9,10 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guard';
+import { JwtAuthGuard } from '../../guard';
 import { CommentService } from './comment.service';
-import { GetUser } from '../auth/decorator';
-import { InsertNoteDTO, UpdateNoteDTO } from './dto';
+import { GetUser } from '../../decorator';
+import { InsertCommentDTO, UpdateCommentDTO } from './dto';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   CustomApiBadRequestResponse,
@@ -41,39 +41,37 @@ export class CommentController {
     description: 'OK',
     type: String,
   })
-  getNotes(@GetUser('id') userId: number) {
-    return this.commentService.getNotes(userId);
+  getComments(@GetUser('id') userId: number) {
+    return this.commentService.getComments(userId);
   }
 
   @Get(':id')
   @CustomApiResponse()
-  getNoteById(@Param('id') noteId: number) {
-    return this.commentService.getNoteById(noteId);
+  getCommentById(@Param('id') commentId: number) {
+    return this.commentService.getCommentById(commentId);
   }
 
   @Post()
   @CustomApiResponse()
-  insertNote(
+  insertComment(
     @GetUser('id', ParseIntPipe) userId: number,
-    @Body() insertNoteDTO: InsertNoteDTO,
+    @Body() insertCommentDTO: InsertCommentDTO,
   ) {
-    console.log(userId);
-    console.log(insertNoteDTO);
-    return this.commentService.insertNote(userId, insertNoteDTO);
+    return this.commentService.insertComment(userId, insertCommentDTO);
   }
 
   @Put(':id')
   @CustomApiResponse()
-  updateNoteById(
-    @Param('id', ParseIntPipe) noteId: number,
-    @Body() updateNoteDTO: UpdateNoteDTO,
+  updateCommentById(
+    @Param('id', ParseIntPipe) commentId: number,
+    @Body() updateCommentDTO: UpdateCommentDTO,
   ) {
-    return this.commentService.updateNoteById(noteId, updateNoteDTO);
+    return this.commentService.updateCommentById(commentId, updateCommentDTO);
   }
 
   @Delete(':id')
   @CustomApiResponse()
-  deleteNoteById(@Param('id', ParseIntPipe) noteId: number) {
-    return this.commentService.deleteNoteById(noteId);
+  deleteCommentById(@Param('id', ParseIntPipe) commentId: number) {
+    return this.commentService.deleteCommentById(commentId);
   }
 }
