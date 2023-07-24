@@ -6,7 +6,6 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { User } from '@prisma/client';
 import { GetUser } from '../../decorator';
 import { JwtAuthGuard } from '../../guard';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
@@ -20,6 +19,7 @@ import {
 } from 'src/utils';
 import { UserService } from './user.service';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { UserEntity } from './entity/user.entity';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -35,7 +35,7 @@ export class UserController {
 
   @Get('me')
   @CustomApiResponse()
-  me(@GetUser() user: User) {
+  me(@GetUser() user: UserEntity) {
     return user;
   }
 

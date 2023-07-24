@@ -3,42 +3,39 @@ import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthDTO } from './dto';
-import { PrismaService } from '../../prisma/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { AuthRepository } from './auth.repository';
 
 @Injectable({})
 export class AuthService {
   constructor(
-    private prismaService: PrismaService,
+    @InjectRepository(AuthRepository) private authRepository: AuthRepository,
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
   async register(authDTO: AuthDTO) {
     const hashedPassword = await argon.hash(authDTO.password);
     try {
-      const user = await this.prismaService.user.create({
-        data: {
-          email: authDTO.email,
-          hashedPassword,
-        },
-        select: {
-          id: true,
-          email: true,
-          createAt: true,
-        },
+      const user = await this.authRepository.save({
+        email: authDTO.email,
+        hashedPassword,
       });
+      delete user.hashedPassword;
       return {
-        ...user,
+        user,
         accessToken: await this.signJwtToken(user.id, user.email),
       };
     } catch (error) {
       if (error.code == 'P2002') {
         throw new ForbiddenException(error.message);
       }
+      throw new ForbiddenException(error.message);
     }
   }
 
   async login(authDTO: AuthDTO) {
-    const user = await this.prismaService.user.findUnique({
+    console.log('login', authDTO);
+    const user = await this.authRepository.findOne({
       where: {
         email: authDTO.email,
       },
@@ -67,7 +64,7 @@ export class AuthService {
 
   async signJwtToken(userId: number, email: string): Promise<string> {
     const payload = {
-      sub: userId,
+      userId,
       email,
     };
     const jwtString = await this.jwtService.signAsync(payload, {

@@ -1,60 +1,36 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Injectable } from '@nestjs/common';
+
 import { CommentDTO } from './dto';
-import { PrismaService } from '../../prisma/prisma.service';
-import { Pagination, PaginationDto } from 'src/common/dto/pagination.dto';
+import { CommentEntity } from './entity/comment.entity';
+import { CommentRepository } from './comment.repository';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @Injectable()
 export class CommentService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    @InjectRepository(CommentRepository)
+    private commentRepository: CommentRepository,
+  ) {}
 
   async createComment(userId: number, taskId: number, commentDTO: CommentDTO) {
-    try {
-      return await this.prismaService.comment.create({
-        data: {
-          ...commentDTO,
-          taskId,
-          userId,
-        },
-      });
-    } catch (error) {
-      throw new ForbiddenException(error.message);
-    }
+    return this.commentRepository.createComment(userId, taskId, commentDTO);
   }
 
-  async getComments(userId: number, taskId: number, params: PaginationDto) {
-    try {
-      const data = await this.prismaService.comment.findMany({
-        where: {
-          userId,
-          taskId,
-        },
-        ...Pagination.query(params.page, params.perPage),
-      });
-      const total = await this.prismaService.comment.count();
-      return {
-        data,
-        total,
-        ...params,
-      };
-    } catch (error) {
-      throw new ForbiddenException(error.message);
-    }
+  async getComments(
+    userId: number,
+    taskId: number,
+    paginationDTO: PaginationDto,
+  ) {
+    return this.commentRepository.getComments(userId, taskId, paginationDTO);
   }
 
-  async getCommentById(taskId: number, userId: number, commentId: number) {
-    try {
-      const comment = await this.prismaService.comment.findFirst({
-        where: {
-          id: commentId,
-          userId,
-          taskId,
-        },
-      });
-      if (!comment) throw new ForbiddenException('Comment not found');
-      return comment;
-    } catch (error) {
-      throw new ForbiddenException(error.message);
-    }
+  async getCommentById(
+    taskId: number,
+    userId: number,
+    commentId: number,
+  ): Promise<CommentEntity> {
+    return this.getCommentById(taskId, userId, commentId);
   }
 
   async updateCommentById(
@@ -62,46 +38,11 @@ export class CommentService {
     taskId: number,
     commentId: number,
     commentDTO: CommentDTO,
-  ) {
-    const where = {
-      id: commentId,
-      userId,
-      taskId,
-    };
-    try {
-      const comment = await this.prismaService.comment.findUnique({
-        where,
-      });
-      if (!comment) {
-        throw new ForbiddenException('Cannot find Comment to update');
-      } else {
-        return await this.prismaService.comment.update({
-          where,
-          data: commentDTO,
-        });
-      }
-    } catch (error) {
-      throw new ForbiddenException(error.message);
-    }
+  ): Promise<CommentEntity> {
+    return this.updateCommentById(userId, taskId, commentId, commentDTO);
   }
 
   async deleteCommentById(taskId: number, userId: number, commentId: number) {
-    const where = {
-      id: commentId,
-      userId,
-      taskId,
-    };
-    const comment = await this.prismaService.comment.findUnique({
-      where,
-    });
-    if (!comment) throw new ForbiddenException('Cannot find Comment to delete');
-    try {
-      this.prismaService.comment.delete({
-        where,
-      });
-      return 'Delete successfully!';
-    } catch (error) {
-      throw new ForbiddenException(error.message);
-    }
+    return this.commentRepository.deleteCommentById(taskId, userId, commentId);
   }
 }
