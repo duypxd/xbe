@@ -1,9 +1,10 @@
+import { UserEntity } from 'src/api/user/entity/user.entity';
 import { TaskEntity } from '../../../api/task/entity/task.entity';
-import { UserEntity } from '../../../api/user/entity/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -29,12 +30,13 @@ export class CommentEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => TaskEntity, (task) => task.comments)
-  task: TaskEntity;
+  @ManyToOne(() => TaskEntity, (task) => task)
+  @JoinColumn({ name: 'taskId' })
+  tasks: UserEntity;
 
-  @ManyToOne(() => TaskEntity, (task) => task.id)
+  @Column()
   taskId: number;
 
-  @ManyToOne(() => UserEntity, (user) => user.id)
+  @Column()
   userId: number;
 }

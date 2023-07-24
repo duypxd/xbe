@@ -1,9 +1,10 @@
-import { CommentEntity } from '../../../api/comment/entity/comment.entity';
+import { CommentEntity } from 'src/api/comment/entity/comment.entity';
 import { UserEntity } from '../../../api/user/entity/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -31,11 +32,12 @@ export class TaskEntity {
   updatedAt: Date;
 
   @ManyToOne(() => UserEntity, (user) => user.tasks)
+  @JoinColumn({ name: 'userId' })
   user: UserEntity;
 
-  @ManyToOne(() => UserEntity, (user) => user.id)
+  @Column()
   userId: number;
 
-  @OneToMany(() => CommentEntity, (comment) => comment.task)
+  @OneToMany(() => CommentEntity, (comment) => comment.tasks)
   comments: CommentEntity[];
 }

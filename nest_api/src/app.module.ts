@@ -5,8 +5,8 @@ import { ConfigModule } from '@nestjs/config';
 import { UserEntity } from './api/user/entity/user.entity';
 import { TaskEntity } from './api/task/entity/task.entity';
 import { CommentEntity } from './api/comment/entity/comment.entity';
-import { UserModule } from './api/user/user.module';
 import { AuthModule } from './api/auth/auth.module';
+import { UserModule } from './api/user/user.module';
 import { TaskModule } from './api/task/task.module';
 import { CommentModule } from './api/comment/comment.module';
 
@@ -20,13 +20,14 @@ import { CommentModule } from './api/comment/comment.module';
       username: 'postgres',
       password: 'Abcde12345-',
       database: 'testDB',
-      entities: [UserEntity, TaskEntity, CommentEntity],
+      entities: [`${__dirname}/modules/**/*.entity{.ts,.js}`],
       synchronize: true,
+      autoLoadEntities: true,
       // migrations: ['dist/src/db/migrations/*.ts'],
     }),
     TypeOrmModule.forFeature([UserEntity, TaskEntity, CommentEntity]),
-    UserModule,
     AuthModule,
+    UserModule,
     TaskModule,
     CommentModule,
   ],

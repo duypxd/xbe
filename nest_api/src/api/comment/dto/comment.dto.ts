@@ -1,22 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CommentDTO {
-  @ApiProperty()
-  @IsNumber()
-  @IsOptional()
-  id: number;
-
-  @ApiProperty()
-  @IsNumber()
-  @IsOptional()
-  userId: number;
-
-  @ApiProperty()
-  @IsNumber()
-  @IsOptional()
-  taskId: number;
-
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

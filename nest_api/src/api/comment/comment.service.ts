@@ -1,20 +1,28 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 
 import { CommentDTO } from './dto';
 import { CommentEntity } from './entity/comment.entity';
 import { CommentRepository } from './comment.repository';
-import { PaginationDto } from '../../common/dto/pagination.dto';
+import { Pagination, PaginationDto } from '../../common/dto/pagination.dto';
 
 @Injectable()
 export class CommentService {
   constructor(
-    @InjectRepository(CommentRepository)
-    private commentRepository: CommentRepository,
+    @InjectRepository(CommentEntity)
+    private _commentRepository: CommentRepository,
   ) {}
-
   async createComment(userId: number, taskId: number, commentDTO: CommentDTO) {
-    return this.commentRepository.createComment(userId, taskId, commentDTO);
+    try {
+      const response = await this._commentRepository.create({
+        ...commentDTO,
+        taskId,
+        userId,
+      });
+      return await this._commentRepository.save(response);
+    } catch (error) {
+      throw new ForbiddenException(error.message);
+    }
   }
 
   async getComments(
@@ -22,7 +30,23 @@ export class CommentService {
     taskId: number,
     paginationDTO: PaginationDto,
   ) {
-    return this.commentRepository.getComments(userId, taskId, paginationDTO);
+    try {
+      const data = await this._commentRepository.find({
+        where: {
+          userId,
+          taskId,
+        },
+        ...Pagination.query(paginationDTO.page, paginationDTO.perPage),
+      });
+      const total = await this._commentRepository.count();
+      return {
+        data,
+        total,
+        ...paginationDTO,
+      };
+    } catch (error) {
+      throw new ForbiddenException(error.message);
+    }
   }
 
   async getCommentById(
@@ -30,7 +54,19 @@ export class CommentService {
     userId: number,
     commentId: number,
   ): Promise<CommentEntity> {
-    return this.getCommentById(taskId, userId, commentId);
+    try {
+      const comment = await this._commentRepository.findOne({
+        where: {
+          id: commentId,
+          userId,
+          taskId,
+        },
+      });
+      if (!comment) throw new ForbiddenException('Comment not found');
+      return comment;
+    } catch (error) {
+      throw new ForbiddenException(error.message);
+    }
   }
 
   async updateCommentById(
@@ -39,10 +75,44 @@ export class CommentService {
     commentId: number,
     commentDTO: CommentDTO,
   ): Promise<CommentEntity> {
-    return this.updateCommentById(userId, taskId, commentId, commentDTO);
+    try {
+      const comment = await this._commentRepository.findOne({
+        where: {
+          id: commentId,
+          userId,
+          taskId,
+        },
+      });
+      if (!comment) {
+        throw new ForbiddenException('Cannot find Comment to update');
+      } else {
+        const response = await this._commentRepository.create({
+          ...commentDTO,
+          id: commentId,
+          userId,
+          taskId,
+        });
+        return await this._commentRepository.save(response);
+      }
+    } catch (error) {
+      throw new ForbiddenException(error.message);
+    }
   }
 
   async deleteCommentById(taskId: number, userId: number, commentId: number) {
-    return this.commentRepository.deleteCommentById(taskId, userId, commentId);
+    const comment = await this._commentRepository.findOne({
+      where: {
+        id: commentId,
+        userId,
+        taskId,
+      },
+    });
+    if (!comment) throw new ForbiddenException('Cannot find Comment to delete');
+    try {
+      this._commentRepository.delete(commentId);
+      return 'Delete successfully!';
+    } catch (error) {
+      throw new ForbiddenException(error.message);
+    }
   }
 }

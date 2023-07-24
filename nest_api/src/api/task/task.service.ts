@@ -1,38 +1,111 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 
 import { TaskDTO } from './dto';
 import { TaskEntity } from './entity/task.entity';
 import { TaskRepository } from './task.repository';
-import { PaginationDto } from '../../common/dto/pagination.dto';
+import { Pagination, PaginationDto } from '../../common/dto/pagination.dto';
 
 @Injectable()
 export class TaskService {
   constructor(
-    @InjectRepository(TaskRepository) private taskRepository: TaskRepository,
+    @InjectRepository(TaskEntity) private _taskRepository: TaskRepository,
   ) {}
 
   async createTask(userId: number, taskDTO: TaskDTO) {
-    return this.taskRepository.createTask(userId, taskDTO);
+    try {
+      const response = await this._taskRepository.create({
+        ...taskDTO,
+        userId,
+      });
+      return await this._taskRepository.save(response);
+    } catch (error) {
+      throw new ForbiddenException(error.message);
+    }
   }
 
   async updateTaskById(userId: number, taskId: number, taskDTO: TaskDTO) {
-    return this.taskRepository.updateTaskById(userId, taskId, taskDTO);
+    try {
+      const task = await this._taskRepository.findOne({
+        where: {
+          userId,
+          id: taskId,
+        },
+      });
+      if (!task) throw new ForbiddenException('Cannot find Task to Update');
+      const response = await this._taskRepository.create({
+        ...taskDTO,
+        id: taskId,
+        userId,
+      });
+      return await this._taskRepository.save(response);
+    } catch (error) {
+      throw new ForbiddenException(error.message);
+    }
   }
 
   async getMyTasks(userId: number, paginationDTO: PaginationDto) {
-    return this.taskRepository.getMyTasks(userId, paginationDTO);
+    try {
+      const data = await this._taskRepository.find({
+        where: {
+          userId,
+        },
+        ...Pagination.query(paginationDTO.page, paginationDTO.perPage),
+      });
+      const total = await this._taskRepository.count();
+      return {
+        data,
+        total,
+        ...paginationDTO,
+      };
+    } catch (error) {
+      throw new ForbiddenException(error.message);
+    }
   }
 
   async getTasks(paginationDTO: PaginationDto) {
-    return this.taskRepository.getTasks(paginationDTO);
+    try {
+      const data = await this._taskRepository.find({
+        ...Pagination.query(paginationDTO.page, paginationDTO.perPage),
+      });
+      const total = await this._taskRepository.count();
+      return {
+        data,
+        total,
+        ...paginationDTO,
+      };
+    } catch (error) {
+      throw new ForbiddenException(error.message);
+    }
   }
 
   async getTaskById(taskId: number): Promise<TaskEntity> {
-    return this.taskRepository.getTaskById(taskId);
+    try {
+      const task = await this._taskRepository.findOne({
+        where: {
+          id: taskId,
+        },
+      });
+      if (!task) throw new ForbiddenException('Task not found');
+      return task;
+    } catch (error) {
+      throw new ForbiddenException(error.message);
+    }
   }
 
-  async deleteTaskById(userId: number, taskId: number): Promise<string> {
-    return this.taskRepository.deleteTaskById(userId, taskId);
+  async deleteTaskById(userId: number, taskId: number) {
+    try {
+      const task = await this._taskRepository.findOne({
+        where: {
+          userId,
+          id: taskId,
+        },
+      });
+      if (!task) throw new ForbiddenException('Cannot find Task to delete');
+      this._taskRepository.delete(taskId);
+      return 'Delete task success';
+    } catch (error) {
+      throw new ForbiddenException(error.message);
+    }
   }
 }
